@@ -1,3 +1,3 @@
-# fist fullstack backend project 
+# first fullstack backend project 
 
 # my attempt to learn backend while building a project
