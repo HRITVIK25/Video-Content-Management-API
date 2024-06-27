@@ -30,7 +30,7 @@ const userSchema = new Schema({
     },
 
     avatar: {
-        type: String, // cloudinaru url
+        type: String, // cloudinary url
         required: true,
     },
 
