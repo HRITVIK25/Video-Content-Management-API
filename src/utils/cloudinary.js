@@ -22,3 +22,5 @@ const uploadOnCloudinary = async (loaclFilePAth) => {
         
     }
 }
+
+export {uploadOnCloudinary}
