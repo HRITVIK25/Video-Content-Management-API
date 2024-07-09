@@ -253,6 +253,10 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid old password");
   }
 
+  if(oldPassword === newPassword){
+    throw new ApiError(400, "old and new password cannot be same")
+  }
+
   user.password = newPassword;
   await user.save({ validateBeforeSave: false });
 
@@ -262,11 +266,15 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  // const user = await User.findById(req.user?._id)
+  const user = await User.findById(req.user?._id)
+
+  if(!user){
+    throw new ApiError(400, "user does not exist")
+  }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, req.user, "current user fetched successfully"));
+    .json(new ApiResponse(200, user , "current user fetched successfully"));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -276,7 +284,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     throw new ApiError(401, "All fields are required");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -285,7 +293,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       },
     },
     { new: true }
-  ).select("-password");
+  ).select("-password -refreshTokens");
 
   return res
     .status(200)
@@ -303,6 +311,19 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar");
+  }
+
+  const deleteUserAvatar = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $unset:{
+        avatar : 1
+      }
+    },
+  )
+
+  if(!deleteUserAvatar){
+    throw new ApiError(400, "Old Avatar not deleted")
   }
 
   const user = await User.findByIdAndUpdate(
@@ -332,6 +353,19 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading coverImage");
   }
 
+  const deleteUsercoverImage = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $unset:{
+        coverImage : 1
+      }
+    },
+  )
+
+  if(!deleteUsercoverImage){
+    throw new ApiError(400, "old cover Image not deleted")
+  }
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -347,7 +381,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "coverImage updated successfully"));
 });
 
-// TODO: make a method to delte old avatar photo
+// TODO: make a method to delete old avatar photo
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params; //params is basically url
