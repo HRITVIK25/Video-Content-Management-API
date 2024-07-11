@@ -26,7 +26,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
   }
 
   const video = await uploadOnCloudinary(videoLocalPath);
-  console.log(video);
 
   const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
@@ -48,7 +47,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, createdVideo, "New video created succesfully"));
+    .json(new ApiResponse(200, createdVideo, "New video uploaded succesfully"));
 });
 
 export { publishAVideo };
