@@ -381,10 +381,9 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "coverImage updated successfully"));
 });
 
-// TODO: make a method to delete old avatar photo
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-  const { username } = req.params; //params is basically url
+  const { username } = req.params; //params is basically url placeholder
 
   if (!username?.trim()) {
     throw new ApiError(400, "username is missing");
