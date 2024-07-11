@@ -38,9 +38,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
   }
 
   const createdVideo = await Video.create({
-    videoFile: video.url,
-    duration: video.duration,
-    thumbnail: thumbnail.url,
+    videoFile: video?.url,
+    duration: video?.duration,
+    thumbnail: thumbnail?.url,
     title,
     description,
   });
@@ -50,4 +50,33 @@ const publishAVideo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdVideo, "New video uploaded succesfully"));
 });
 
-export { publishAVideo };
+const getVideoById = asyncHandler(async(req,res)=>{
+  const { title } = req.body
+  if(!title){
+    throw new ApiError(400, "Please provide title for the video")
+  }
+  
+  const video = await Video.find({title})
+
+  let videoIds = []; 
+
+  if (Array.isArray(video)) {
+  
+    for (let i = 0; i < video.length; i++) {
+      let videoId = video[i]._id;
+      videoIds.push(videoId); 
+    }
+  } else {
+    const videoId = video._id; 
+    videoIds.push(videoId); 
+  }
+  
+  res
+  .status(200)
+  .json(new ApiResponse(200, videoIds, "Video fetched succesfully"))
+});
+
+export { 
+  publishAVideo,
+  getVideoById
+ };

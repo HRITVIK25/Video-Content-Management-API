@@ -86,7 +86,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // created a new user using above field spellings ka dhyan rakhen
   const user = await User.create({
     fullname,
-    avatar: avatar.url,
+    avatar: avatar?.url,
     coverImage: coverImage?.url || "", // because cover image is not neccesary so check if uploaded
     email,
     password,
