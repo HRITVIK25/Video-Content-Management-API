@@ -171,12 +171,10 @@ const videoDelete = asyncHandler(async (req, res) => {
   }
 
   const objectVideoId = mongoose.Types.ObjectId.createFromHexString(videoId);
-  console.log(objectVideoId);
-  console.log(isValidObjectId(objectVideoId));
+
 
   const deletedVideo = Video.findByIdAndDelete(objectVideoId)
     .then((result) => {
-      console.log("deletion success: ", result);
       return res
         .status(200)
         .json(new ApiResponse(200, result, "video deleted sucessfuly"));
