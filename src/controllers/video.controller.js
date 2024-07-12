@@ -78,9 +78,16 @@ const getVideoByTitle = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
   const { id: videoId } = req.params;
 
+  if (!videoId) {
+    throw new ApiError(400, "Video ID not found");
+  }
+
+  const video = await Video?.findById(videoId);
+  console.log(video);
+
   return res
     .status(200)
-    .json(new ApiResponse(200, videoId, "videoID fetched successfully"));
+    .json(new ApiResponse(200, video, "videoID fetched successfully"));
 });
 
 const updateVideoThumbnail = asyncHandler(async (req, res) => {
@@ -119,8 +126,71 @@ const updateVideoThumbnail = asyncHandler(async (req, res) => {
   );
 
   return res
-  .status(200)
-  .json(new ApiResponse(200, updatedThumbnail, "Thumbnail updated successfully"))
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedThumbnail, "Thumbnail updated successfully")
+    );
 });
 
-export { publishAVideo, getVideoByTitle, getVideoById, updateVideoThumbnail };
+const updateVideoDetails = asyncHandler(async (req, res) => {
+  const { id: videoId } = req.params;
+
+  if (!videoId) {
+    throw new ApiError(400, "Video ID not found");
+  }
+
+  const { title, description } = req.body;
+
+  if (!(title || description)) {
+    throw new ApiError(400, "atleast one field is required");
+  }
+
+  const updatedVideo = await Video.findByIdAndUpdate(
+    videoId,
+    {
+      $set: {
+        title: title,
+        description: description,
+      },
+    },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedVideo, "Video details updated successfully")
+    );
+});
+
+const videoDelete = asyncHandler(async (req, res) => {
+  const { id: videoId } = req.params;
+
+  if (!videoId) {
+    throw new ApiError(400, "video ID not found");
+  }
+
+  const objectVideoId = mongoose.Types.ObjectId.createFromHexString(videoId);
+  console.log(objectVideoId);
+  console.log(isValidObjectId(objectVideoId));
+
+  const deletedVideo = Video.findByIdAndDelete(objectVideoId)
+    .then((result) => {
+      console.log("deletion success: ", result);
+      return res
+        .status(200)
+        .json(new ApiResponse(200, result, "video deleted sucessfuly"));
+    })
+    .catch((error) => {
+      throw new ApiError(400, "Couldn't delete video ");
+    });
+});
+
+export {
+  publishAVideo,
+  getVideoByTitle,
+  getVideoById,
+  updateVideoThumbnail,
+  updateVideoDetails,
+  videoDelete,
+};
