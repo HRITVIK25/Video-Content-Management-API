@@ -27,7 +27,6 @@ router.route("/uploadVideo").post(
   publishAVideo
 );
 
-// Secure Routes
 router.route("/findVideoByTitle").get(getVideoByTitle);
 router.route("/getVideoById/:id").get(getVideoById);
 router
