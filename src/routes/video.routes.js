@@ -8,6 +8,7 @@ import {
   updateVideoDetails,
   updateVideoThumbnail,
   videoDelete,
+  togglePublishStatus,
 } from "../controllers/video.controller.js";
 
 const router = Router();
@@ -33,7 +34,8 @@ router
   .route("/updateThumbnail/:id")
   .patch(upload.single("thumbnail"), updateVideoThumbnail);
 
-router.route("/UpdateVideoDetails/:id").patch(updateVideoDetails)
-router.route("/DeleteVideo/:id").delete(videoDelete)
+router.route("/UpdateVideoDetails/:id").patch(updateVideoDetails);
+router.route("/DeleteVideo/:id").delete(videoDelete);
+router.route("/togglePublishButton/:id").get(togglePublishStatus);
 
 export default router;

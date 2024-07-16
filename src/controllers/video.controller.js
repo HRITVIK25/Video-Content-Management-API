@@ -37,12 +37,15 @@ const publishAVideo = asyncHandler(async (req, res) => {
     throw new ApiError(401, "cloudinary thumbnail url is required");
   }
 
+  const user = await User.findById(req.user?._id)
+
   const createdVideo = await Video.create({
     videoFile: video?.url,
     duration: video?.duration,
     thumbnail: thumbnail?.url,
     title,
     description,
+    owner: user
   });
 
   return res
@@ -184,6 +187,19 @@ const videoDelete = asyncHandler(async (req, res) => {
     });
 });
 
+const togglePublishStatus = asyncHandler(async(req,res)=>{
+  const { id: videoId } = req.params;
+
+  const togglePublishButton = await Video.findOneAndUpdate({videoId},[{$set:{isPublished:{$eq:[false,"$isPublished"]}}}]);
+   
+  const video = await Video.findById(videoId)
+
+  res
+  .status(200)
+  .json(new ApiResponse(200, video, "Video publish status changed"))
+
+});
+
 export {
   publishAVideo,
   getVideoByTitle,
@@ -191,4 +207,5 @@ export {
   updateVideoThumbnail,
   updateVideoDetails,
   videoDelete,
+  togglePublishStatus
 };
