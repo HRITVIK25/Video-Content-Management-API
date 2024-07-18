@@ -37,7 +37,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     throw new ApiError(401, "cloudinary thumbnail url is required");
   }
 
-  const user = await User.findById(req.user?._id)
+  const user = await User.findById(req.user?._id);
 
   const createdVideo = await Video.create({
     videoFile: video?.url,
@@ -45,7 +45,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     thumbnail: thumbnail?.url,
     title,
     description,
-    owner: user
+    owner: user,
   });
 
   return res
@@ -175,7 +175,6 @@ const videoDelete = asyncHandler(async (req, res) => {
 
   const objectVideoId = mongoose.Types.ObjectId.createFromHexString(videoId);
 
-
   const deletedVideo = Video.findByIdAndDelete(objectVideoId)
     .then((result) => {
       return res
@@ -187,18 +186,54 @@ const videoDelete = asyncHandler(async (req, res) => {
     });
 });
 
-const togglePublishStatus = asyncHandler(async(req,res)=>{
+const togglePublishStatus = asyncHandler(async (req, res) => {
   const { id: videoId } = req.params;
 
-  const togglePublishButton = await Video.findOneAndUpdate({videoId},[{$set:{isPublished:{$eq:[false,"$isPublished"]}}}]);
-   
-  const video = await Video.findById(videoId)
+  if (!videoId) {
+    throw new ApiError(400, "Video not found");
+  }
+
+  // const togglePublishButton = await Video.findOneAndUpdate({videoId},[{$set:{isPublished:{$eq:[false,"$isPublished"]}}}]);
+
+  // const togglePublishButton = await Video.findOneAndUpdate(
+  //   { videoId },
+  //   [
+  //     { $set: { isPublished: { $not: "$isPublished" } } }
+  //   ]
+  // )
+  const video = await Video.findById(videoId);
+  const isPublished = video.isPublished;
+  console.log(isPublished);
+  if (isPublished) {
+    const updatedVideo = await Video.findById( videoId ).setOptions({ default: false });
+    console.log(updatedVideo);
+    // await Video.findByIdAndUpdate(videoId,
+    //   {
+    //     $set: {
+    //       isPublished : false
+    //     }
+    //   }, {new:true}
+    // )
+  } else {
+    await Video.findByIdAndUpdate(
+      videoId,
+      {
+        $set: {
+          isPublished: true,
+        },
+      },
+      { new: true }
+    );
+  }
+
+  const updateVideo = await Video.findById(videoId);
 
   res
-  .status(200)
-  .json(new ApiResponse(200, video, "Video publish status changed"))
-
+    .status(200)
+    .json(new ApiResponse(200, updateVideo, "Video publish status changed"));
 });
+
+
 
 export {
   publishAVideo,
@@ -207,5 +242,5 @@ export {
   updateVideoThumbnail,
   updateVideoDetails,
   videoDelete,
-  togglePublishStatus
+  togglePublishStatus,
 };
