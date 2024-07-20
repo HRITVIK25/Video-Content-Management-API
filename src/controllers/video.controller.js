@@ -233,8 +233,6 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updateVideo, "Video publish status changed"));
 });
 
-
-
 export {
   publishAVideo,
   getVideoByTitle,
