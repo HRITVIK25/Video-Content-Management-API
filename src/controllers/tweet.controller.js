@@ -1,7 +1,6 @@
 import { Mongoose } from "mongoose";
 import { Tweet } from "../models/tweet.model.js";
 import { User } from "../models/user.model.js";
-import { Video } from "../models/video.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -40,7 +39,54 @@ const createTweet = asyncHandler(async (req, res) => {
 const getUserTweet = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user?._id);
   if (!user) {
+    throw new ApiError(400, "User not found");
   }
+
+  const userId = user?._id;
+
+  const tweet = await User.aggregate([
+    {
+      $match: {
+        _id: userId,
+      },
+    },
+    {
+      $lookup: {
+        from: "tweets",
+        localField: "_id",
+        foreignField: "owner",
+        as: "Tweets",
+      },
+    },
+    // {
+    //   $addFields: {
+    //     Tweets: {
+    //       $size: "$Tweets",
+    //     },
+    //   },
+    // },
+    {
+      $unwind: {
+        path: "$Tweets"
+      }
+    },
+    {
+      $project: {
+        _id: "$Tweets._id",
+        content: "$Tweets.content",
+        createdAt : "$Tweets.createdAt",
+        user: {
+          _id : 1,
+          fullname: 1,
+          username: 1
+        }
+      },
+    },
+  ]);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tweet, "User tweet fetched successfully"));
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
