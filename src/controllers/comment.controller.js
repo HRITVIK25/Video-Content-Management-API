@@ -5,6 +5,38 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const getVideoComments = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, id:videoId } = req.params;
+
+  if(!videoId){
+    throw new ApiError(400, "Video not found")
+  }
+
+  try {
+    const videoComments = await Comment.find({video: videoId})
+                                       .limit(limit*1)
+                                       .skip((page-1)*10)
+                                       .sort({createdAt: -1})
+
+    const countComments = await Comment.countDocuments({video: videoId});
+    const totalpages = Math.ceil(countComments/limit)
+
+    const comments = {
+      videoComments: videoComments,
+      pages: totalpages,
+      currentPage: page
+    }
+
+    console.log(comments);
+    return res 
+    .status(200)
+    .json(new ApiResponse(200, comments, "Comments fetched successfully"))
+
+  } catch (error) {
+    throw new ApiError(500, `Error: ${error}`)
+  }
+});
+
 const addComment = asyncHandler(async (req, res) => {
   const { content } = req.body;
   const { id: videoId } = req.params;
@@ -83,14 +115,8 @@ const deleteComment = asyncHandler(async (req, res) => {
   }
 
   return res
-  .status(200)
-  .json(new ApiResponse(200, deletedComment, "Comment Deleted Successfully"))
-
+    .status(200)
+    .json(new ApiResponse(200, deletedComment, "Comment Deleted Successfully"));
 });
 
-
-export { 
-  addComment, 
-  updateComment, 
-  deleteComment 
-};
+export { addComment, updateComment, deleteComment, getVideoComments };
