@@ -193,27 +193,18 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video not found");
   }
 
-  // const togglePublishButton = await Video.findOneAndUpdate({videoId},[{$set:{isPublished:{$eq:[false,"$isPublished"]}}}]);
-
-  // const togglePublishButton = await Video.findOneAndUpdate(
-  //   { videoId },
-  //   [
-  //     { $set: { isPublished: { $not: "$isPublished" } } }
-  //   ]
-  // )
   const video = await Video.findById(videoId);
   const isPublished = video.isPublished;
   console.log(isPublished);
   if (isPublished) {
-    const updatedVideo = await Video.findById( videoId ).setOptions({ default: false });
-    console.log(updatedVideo);
-    // await Video.findByIdAndUpdate(videoId,
-    //   {
-    //     $set: {
-    //       isPublished : false
-    //     }
-    //   }, {new:true}
-    // )
+     await Video.findByIdAndUpdate(videoId,
+      {
+        $set: {
+          isPublished : false
+        }
+      }, {new:true}
+    )
+
   } else {
     await Video.findByIdAndUpdate(
       videoId,
