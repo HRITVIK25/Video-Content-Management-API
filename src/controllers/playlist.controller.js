@@ -152,6 +152,35 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     );
 });
 
+const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
+  const { playlistId: playlistId, videoId: videoId } = req.params;
+
+  if (!playlistId) {
+    throw new ApiError(400, "Playlist not found");
+  }
+
+  if (!videoId) {
+    throw new ApiError(400, "Video not found");
+  }
+  try {
+    const updatedPlaylist = await Playlist.findByIdAndUpdate(
+      playlistId,
+      {
+        $pull: {
+          videos: videoId,
+        },
+      },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, updatedPlaylist, "Video removed succesffully"));
+  } catch (error) {
+    throw new ApiError(400, `ERROR: ${error}`);
+  }
+});
+
 export {
   createPlaylist,
   getUserPlaylist,
@@ -159,4 +188,5 @@ export {
   addVideoToPlaylist,
   deletePlaylist,
   updatePlaylist,
+  removeVideoFromPlaylist
 };
