@@ -78,12 +78,16 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   console.log(video);
 
   try {
-    const playlist = await Playlist.findByIdAndUpdate(playlistId, {
+    const playlist = await Playlist.findByIdAndUpdate(
+      playlistId,
+      {
         // why is this pushing only id of videos
-      $push: {
-        videos: video,
+        $push: {
+          videos: video,
+        },
       },
-    },{new:true});
+      { new: true }
+    );
     console.log(playlist);
     return res
       .status(200)
@@ -95,4 +99,64 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   }
 });
 
-export { createPlaylist, getUserPlaylist, getPlaylistById, addVideoToPlaylist };
+const deletePlaylist = asyncHandler(async (req, res) => {
+  const { playlistId: playlistId } = req.params;
+
+  if (!playlistId) {
+    throw new ApiError(400, "Playlist not found");
+  }
+
+  try {
+    const deletedPlaylist = await Playlist.findByIdAndDelete(playlistId);
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, deletedPlaylist, "Playlist deleted successfully")
+      );
+  } catch (error) {
+    throw new ApiError(400, `ERROR: ${error}`);
+  }
+});
+
+const updatePlaylist = asyncHandler(async (req, res) => {
+  const { playlistId: playlistId } = req.params;
+  const { name, description } = req.body;
+
+  if (!(name || description)) {
+    throw new ApiError(400, "Atleast one field is required");
+  }
+
+  if (name.trim() === "" || description.trim() === "") {
+    throw new ApiError(400, "Name or description cannot be empty");
+  }
+
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $set: {
+        name: name,
+        description: description,
+      },
+    },
+    { new: true }
+  );
+
+  if (!updatedPlaylist) {
+    throw new ApiError(400, "Error updating the playlist");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedPlaylist, "Playlist updated successfully")
+    );
+});
+
+export {
+  createPlaylist,
+  getUserPlaylist,
+  getPlaylistById,
+  addVideoToPlaylist,
+  deletePlaylist,
+  updatePlaylist,
+};
