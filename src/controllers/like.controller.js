@@ -10,7 +10,24 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 const toggleVideoLike = asyncHandler(async(req,res)=>{
-    
+    const {videoId: videoId} = req.params;
+    if(!videoId){
+        throw new ApiError(400, "Video not found")
+    }
+
+    const toggleButton = await Video.aggregate([
+        {
+            $match: {
+                _id: videoId
+            }
+        },
+        {
+            $lookup: {
+                from: "likes",
+                localField: "_id"
+            }
+        }
+    ])
 })
 
 export {};
